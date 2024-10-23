@@ -83,3 +83,72 @@ MainWindow::MainWindow(QWidget *parent)
         "}"
         );
 }
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::on_openFile_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("HTML Files (*.html);;All Files (*)"));
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QMessageBox::warning(this, tr("Error"), tr("Cannot open file: %1").arg(file.errorString()));
+            return;
+        }
+        QTextStream in(&file);
+        QString htmlContent = in.readAll();
+        file.close();
+
+        textEdit->setHtml(htmlContent);
+        lastFilePath = fileName;
+        isContentModified = false;
+    }
+}
+
+void MainWindow::on_saveFile_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "", tr("HTML Files (*.html);;All Files (*)"));
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QMessageBox::warning(this, tr("Error"), tr("Cannot save file: %1").arg(file.errorString()));
+            return;
+        }
+        QTextStream out(&file);
+        out << textEdit->toHtml();
+        file.close();
+        lastFilePath = fileName;
+        isContentModified = false;
+    }
+}
+
+void MainWindow::saveToTempFile() {
+    if (!tempFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, tr("Error"), tr("Cannot write to temp file: %1").arg(tempFile.errorString()));
+        return;
+    }
+    QTextStream out(&tempFile);
+    out << textEdit->toHtml();
+    tempFile.close();
+    isTempFileEmpty = false;
+}
+
+void MainWindow::restoreFromTemp() {
+    if (isTempFileEmpty) {
+        QMessageBox::warning(this, tr("Warning"), tr("No text to restore."));
+        return;
+    }
+
+    QFile file(tempFile.fileName());
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, tr("Error"), tr("Cannot open temp file: %1").arg(file.errorString()));
+        return;
+    }
+    QTextStream in(&file);
+    QString htmlContent = in.readAll();
+    file.close();
+
+    textEdit->setHtml(htmlContent);
+}
