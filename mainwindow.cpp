@@ -177,6 +177,13 @@ void MainWindow::on_colorChange_triggered() {
     }
 }
 
+void MainWindow::clearAndSave() {
+    saveToTempFile();
+    textEdit->clear();
+    ui->Return->setEnabled(true);
+    isContentModified = false;
+}
+
 void MainWindow::on_search_triggered() {
     bool ok;
     QString searchText = QInputDialog::getText(this, "Search", "Enter text to search:", QLineEdit::Normal, "", &ok);
