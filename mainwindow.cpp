@@ -251,3 +251,8 @@ void MainWindow::on_createTable_triggered()
         isContentModified = true;
     }
 }
+
+void MainWindow::loadSettings() {
+    QSettings settings("MyCompany", "MyApp");
+    lastFilePath = settings.value("lastFilePath", "").toString();
+}
