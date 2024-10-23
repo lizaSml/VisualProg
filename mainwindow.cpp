@@ -271,3 +271,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     saveSettings();
     event->accept();
 }
+void MainWindow::saveSettings() {
+    QSettings settings("MyCompany", "MyApp");
+    settings.setValue("lastFilePath", lastFilePath);
+}
