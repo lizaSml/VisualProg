@@ -256,3 +256,18 @@ void MainWindow::loadSettings() {
     QSettings settings("MyCompany", "MyApp");
     lastFilePath = settings.value("lastFilePath", "").toString();
 }
+void MainWindow::closeEvent(QCloseEvent *event) {
+    if (isContentModified) {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Save Changes", "Do you want to save your changes?",
+                                      QMessageBox::Save | QMessageBox::No  | QMessageBox::Cancel);
+        if (reply == QMessageBox::Save) {
+            on_saveFile_triggered();
+        } else if (reply == QMessageBox::Cancel) {
+            event->ignore();
+            return;
+        }
+    }
+    saveSettings();
+    event->accept();
+}
