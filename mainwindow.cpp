@@ -152,3 +152,95 @@ void MainWindow::restoreFromTemp() {
 
     textEdit->setHtml(htmlContent);
 }
+void MainWindow::on_fontChange_triggered() {
+    bool ok;
+    QFont font = QFontDialog::getFont(&ok, this);
+    if (ok) {
+        QTextCursor cursor = textEdit->textCursor();
+        if (!cursor.hasSelection()) {
+            textEdit->setFont(font);
+        } else {
+            QTextCharFormat format;
+            format.setFont(font);
+            cursor.mergeCharFormat(format);
+            textEdit->setTextCursor(cursor);
+        }
+        isContentModified = true;
+    }
+}
+
+void MainWindow::on_colorChange_triggered() {
+    QColor color = QColorDialog::getColor(Qt::white, this);
+    if (color.isValid()) {
+        textEdit->setTextColor(color);
+        isContentModified = true;
+    }
+}
+
+void MainWindow::on_search_triggered() {
+    bool ok;
+    QString searchText = QInputDialog::getText(this, "Search", "Enter text to search:", QLineEdit::Normal, "", &ok);
+
+    if (ok && !searchText.isEmpty()) {
+        QTextDocument *document = textEdit->document();
+        QTextCursor cursor(document);
+
+        cursor = document->find(searchText, cursor);
+
+        if (!cursor.isNull()) {
+            textEdit->setTextCursor(cursor);
+        } else {
+            QMessageBox::information(this, "Search", "Text not found.");
+        }
+    }
+}
+
+void MainWindow::on_replace_triggered() {
+    bool ok;
+    QString searchText = QInputDialog::getText(this, "Replace", "Enter text to search:", QLineEdit::Normal, "", &ok);
+
+    if (ok && !searchText.isEmpty()) {
+        QString replaceText = QInputDialog::getText(this, "Replace", "Enter text to replace with:", QLineEdit::Normal, "", &ok);
+
+        if (ok) {
+            QTextDocument *document = textEdit->document();
+            QTextCursor cursor(document);
+
+            cursor = document->find(searchText, cursor);
+
+            if (!cursor.isNull()) {
+                cursor.insertText(replaceText);
+                textEdit->setTextCursor(cursor);
+            } else {
+                QMessageBox::information(this, "Replace", "Text not found.");
+            }
+        }
+    }
+}
+
+void MainWindow::on_createTable_triggered()
+{
+    TableInputDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        int rows = dialog.getRows();
+        int columns = dialog.getColumns();
+
+        if (rows < 1 || rows > 100 || columns < 1 || columns > 100) {
+            QMessageBox::warning(this, tr("Invalid Input"), tr("Number of rows and columns must be between 1 and 100."));
+            return;
+        }
+
+        QString html = "<table border=\"1\" style=\"border-collapse: collapse; width: 100%;\">";
+        for (int i = 0; i < rows; ++i) {
+            html += "<tr>";
+            for (int j = 0; j < columns; ++j) {
+                html += "<td style=\"padding: 8px; text-align: left; border: 1px solid #ddd;\"><div contenteditable=\"false\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div></td>";
+            }
+            html += "</tr>";
+        }
+        html += "</table>";
+
+        textEdit->append(html);
+        isContentModified = true;
+    }
+}
